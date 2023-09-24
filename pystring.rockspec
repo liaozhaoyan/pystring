@@ -1,4 +1,4 @@
-package = "lua-filesize"
+package = "pystring"
 version = "1.0.0"
 source = {
     url = "https://github.com/liaozhaoyan/pystring.git"
