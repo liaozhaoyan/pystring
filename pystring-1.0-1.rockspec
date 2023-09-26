@@ -1,7 +1,7 @@
 package = "pystring"
 version = "1.0-1"
 source = {
-    url = "git://github.com/liaozhaoyan/pystring.git"
+    url = "git://github.com/liaozhaoyan/pystring"
 }
 description = {
     summary = "pystring provides many string processing functions, such as split and strip. You can follow the python method to process Lua strings",
