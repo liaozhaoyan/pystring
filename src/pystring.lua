@@ -58,6 +58,11 @@ local function setupRepl(s)
     end
 end
 
+--- Rotates the characters of 's' 'n' positions circulary.
+--- --
+--- @param s string
+--- @param n integer
+--- @return string
 function pystring:shift(s, n)  -- position for right, negative for left
     local len = #s
     if len == 0 then
@@ -79,6 +84,10 @@ function pystring:shift(s, n)  -- position for right, negative for left
     end
 end
 
+--- True if the string has only lowercase characters, false if not.
+--- --
+--- @param s string
+--- @return boolean
 function pystring:islower(s)
     local match = string.match(s, "[%l%s%p]+")
     if not match then
@@ -87,6 +96,10 @@ function pystring:islower(s)
     return #match == #s
 end
 
+--- True if the string has only uppercase characters, false if not.
+--- --
+--- @param s string
+--- @return boolean
 function pystring:isupper(s)
     local match = string.match(s, "[%u%s%p]+")
     if not match then
@@ -95,6 +108,11 @@ function pystring:isupper(s)
     return #match == #s
 end
 
+--- If the string has only digits it returns true, otherwise it will be 
+--- false.
+--- --
+--- @param s string
+--- @return boolean
 function pystring:isdigit(s)
     local match = string.match(s, "%d+")
     if not match then
@@ -103,6 +121,20 @@ function pystring:isdigit(s)
     return #match == #s
 end
 
+--- If the string is an integer expression it returns true, otherwise false.
+--- --
+--- @param s string
+--- @return boolean
+function pystring:isinteger(s)
+    local match = string.match(s, "^[%-%+]?%d+$")
+    return match and true or false
+end
+
+--- If the string is an hexadecimal expression, the function returns true, 
+--- otherwise it returns false.
+--- --
+--- @param s string
+--- @return boolean
 function pystring:ishex(s)
     local match = string.match(s, "%x+")
     if not match then
@@ -111,6 +143,11 @@ function pystring:ishex(s)
     return #match == #s
 end
 
+--- If the string is a combination of alfanumeric characters, the function 
+--- returns true, otherwise it returns false.
+--- --
+--- @param s string
+--- @return boolean
 function pystring:isalnum(s)
     local match = string.match(s, "%w+")
     if not match then
@@ -119,7 +156,12 @@ function pystring:isalnum(s)
     return #match == #s
 end
 
-function pystring:istilte(s)
+--- If the string is a title expression, the function  returns true, otherwise
+--- it returns false.
+--- --
+--- @param s string
+--- @return boolean
+function pystring:istitle(s)
     local match = string.match(s, "%u%l*")
     if not match then
         return false
@@ -127,32 +169,36 @@ function pystring:istilte(s)
     return #match == #s
 end
 
+--- If the string has a float expression, the function will return true, in other
+--- case it will be false.
+--- --
+--- @param s string
+--- @return boolean
 function pystring:isfloat(s)
-    local dotCnt = 0
-    local ascDot = string.byte(".")
-    local asc0, asc9 = string.byte("0"), string.byte("9")
-    for i = 1, #s do
-        local ch = s:byte(i)
-        if ch == ascDot then
-            dotCnt = dotCnt + 1
-            if dotCnt > 1 then
-                return false
-            end
-        elseif ch > asc9 or ch < asc0 then
-            return false
-        end
-    end
-    return true
+    local re = "^[%-%+]?%d*%.%d+$"
+    return string.match(s, re) ~= nil
 end
 
+--- Lua string.lower wrapper
+--- --
+--- @param s string
+--- @return string
 function pystring:lower(s)
     return string.lower(s)
 end
 
+--- Lua string.lower wrapper
+--- --
+--- @param s string
+--- @return string
 function pystring:casefold(s)
     return string.lower(s)
 end
 
+--- Lua string.upper wrapper
+--- --
+--- @param s string
+--- @return string
 function pystring:upper(s)
     return string.upper(s)
 end
@@ -444,6 +490,12 @@ function pystring:rindex(s1, s2, start, stop)
     return res
 end
 
+--- Count how many times the pattern appears in the target
+--- string.
+--- --
+--- @param s string
+--- @param find string
+--- @return integer
 function pystring:count(s, find)
     local i = 0
     local patten = setupPatten(find)
@@ -453,6 +505,14 @@ function pystring:count(s, find)
     return i
 end
 
+--- Replaces the first n occurrences which matches with 'find' pattern
+--- and substitutes them by repl.
+--- --
+--- @param s string
+--- @param find string # Regular expression
+--- @param repl string # Replacement
+--- @param n integer # Number of occurrences until stop counting.
+--- @return string, integer
 function pystring:replace(s, find, repl, n)
     local patten = setupPatten(find)
     repl = setupRepl(repl)
@@ -460,6 +520,11 @@ function pystring:replace(s, find, repl, n)
     return string.gsub(s, patten, repl, n)
 end
 
+--- Expand blank spaces in the string by 'tabs' times.
+--- --
+--- @param s string
+--- @param tabs integer
+--- @return string, integer
 function pystring:expandtabs(s, tabs)
     tabs = tabs or 4
     local repl = string.rep(" ", tabs)
