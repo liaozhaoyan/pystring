@@ -27,6 +27,7 @@ Note that the implementation methods and return results are different.
 * islower
 * isupper
 * isdigit
+* isinteger
 * ishex
 * isalnum
 * istilte
