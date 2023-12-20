@@ -38,3 +38,4 @@ Note that the implementation methods and return results are different.
 * zfill
 * replace
 * expandtabs
+* with

@@ -6,8 +6,8 @@
 
 local pystring = {}
 
-local luaReReserve = "().%+-*?[]^$"
 local function checkLuaReReserve(ch)
+    local luaReReserve = "().%+-*?[]^$"
     for c in string.gmatch(luaReReserve, ".") do
         if c == ch then
             return "%" .. ch
@@ -203,6 +203,10 @@ function pystring:upper(s)
     return string.upper(s)
 end
 
+--- Set to upper case the lower case letters and vice versa.
+--- --
+--- @param s string
+--- @return string
 function pystring:swapcase(s)
     local swaps = {}
     local ascA, ascZ, asc_a, asc_z = string.byte('A'), string.byte('Z'), string.byte('a'), string.byte('z')
@@ -219,6 +223,10 @@ function pystring:swapcase(s)
     return table.concat(swaps)
 end
 
+--- Capitalize `s` word.
+--- --
+--- @param s string
+--- @return string
 function pystring:capitalize(s)
     if #s < 1 then
         return s
@@ -228,6 +236,10 @@ function pystring:capitalize(s)
     return string.upper(s1) .. s2
 end
 
+--- Capitalize all of words in `s`.
+--- --
+--- @param s string
+--- @return string
 function pystring:title(s)
     if #s < 1 then
         return s
@@ -239,6 +251,10 @@ function pystring:title(s)
     return table.concat(ss, " ")
 end
 
+--- Capitalize line by line all the lines in `s`.
+--- --
+--- @param s string
+--- @return string
 function pystring:capwords(s)
     local lines = pystring:split(s, "\n")
     local rLines = {}
@@ -253,6 +269,12 @@ function pystring:capwords(s)
     return table.concat(rLines, "\n")
 end
 
+--- Justify `s` by left with `len` copies of `ch`.
+--- --
+--- @param s string
+--- @param len integer
+--- @param ch string
+--- @return string
 function pystring:ljust(s, len, ch)
     ch = ch or " "
     if #ch ~= 1 then
@@ -267,6 +289,12 @@ function pystring:ljust(s, len, ch)
     end
 end
 
+--- Justify `s` by right with `len` copies of `ch`.
+--- --
+--- @param s string
+--- @param len integer
+--- @param ch string
+--- @return string
 function pystring:rjust(s, len, ch)
     ch = ch or " "
     if #ch ~= 1 then
@@ -281,6 +309,12 @@ function pystring:rjust(s, len, ch)
     end
 end
 
+--- Center `s` lines with `len` copies of `ch` in the longest line.
+--- --
+--- @param s string
+--- @param len integer
+--- @param ch string
+--- @return string
 function pystring:center(s, len, ch)
     ch = ch or " "
     if #ch ~= 1 then
@@ -298,17 +332,29 @@ function pystring:center(s, len, ch)
     end
 end
 
+--- Justify by left with zeros.
+--- --
+--- @param s string
+--- @param len integer
+--- @return string
 function pystring:zfill(s, len)
     return pystring:ljust(s, len, "0")
 end
 
+--- Convert the given `s` string in a table of substrings 
+--- delimited by `delimiter`. The maximum number of substrings is
+--- defined by `n` which is 2^63 - 1 (*MaxInteger*) by default.
+--- --
+--- @param s string
+--- @param delimiter string
+--- @param n integer
 function pystring:split(s, delimiter, n)
     local result = {}
     if not delimiter or delimiter == "" then  -- for blank, gsub multi blank to single
         s = string.gsub(s, "%s+", " ")
     end
-    local delimiter = setupDelimiter(delimiter or " ")
-    local n = n or 2 ^ 63 - 1
+    delimiter = setupDelimiter(delimiter or " ")
+    n = n or 2 ^ 63 - 1
 
     local nums = 0
     local beg = 1
@@ -334,6 +380,12 @@ function pystring:split(s, delimiter, n)
     return result
 end
 
+--- Divide s by `del` delimiter returning the left side,
+--- the delimiter and the right side.
+--- --
+--- @param s string
+--- @param del string
+--- @return table<string> | nil
 function pystring:partition(s, del)
     local result = {}
     del = del or " "
@@ -356,6 +408,12 @@ local function reverseTable(t)
     end
 end
 
+--- Split the reverse of `s` with the reverse of `delimiter`
+--- --
+--- @param s string
+--- @param delimiter string
+--- @param n integer
+--- @return table<string>
 function pystring:rsplit(s, delimiter, n)
     local result = {}
     local n = n or 2 ^ 63 - 1
@@ -390,6 +448,7 @@ function pystring:rsplit(s, delimiter, n)
     return result
 end
 
+--- 
 function pystring:rpartition(s, del)
     local result = {}
     del = del or " "
@@ -409,10 +468,19 @@ function pystring:rpartition(s, del)
     end
 end
 
+--- Split string line by line
+--- --
+--- @param s string
+--- @return table<string>
 function pystring:splitlines(s)
     return pystring:split(s, '\n')
 end
 
+--- Remove first `chars` string of `s`. 
+--- --
+--- @param s string
+--- @param chars string
+--- @return string
 function pystring:lstrip(s, chars)
     local patten = "^" .. setupPatten(chars) .. "+"
     local _, ends = string.find(s, patten)
@@ -423,6 +491,11 @@ function pystring:lstrip(s, chars)
     end
 end
 
+--- Remove last `chars` string of `s`.
+--- --
+--- @param s string
+--- @param chars string
+--- @return string
 function pystring:rstrip(s, chars)
     local patten = setupPatten(chars) .. "+$"
     local last = string.find(s, patten)
@@ -433,23 +506,52 @@ function pystring:rstrip(s, chars)
     end
 end
 
+--- Remove last and first `chars` string of `s`, it's a consecutive
+--- `lstrip` and `rstrip`.
+--- --
+--- @param s string
+--- @param chars string
+--- @return string
 function pystring:strip(s, chars)
     local res = pystring:lstrip(s, chars)
     return pystring:rstrip(res, chars)
 end
 
+--- Joins an array of *string* `strings` with `delim` between.
+--- --
+--- @param delim string
+--- @param strings table<string>
+--- @return string
 function pystring:join(delim, strings)
     return table.concat(strings, delim)
 end
 
+--- Check if `s1` begin with `s2`.
+--- --
+--- @param s1 string
+--- @param s2 string
+--- @return string | boolean
 function pystring:startswith(s1, s2)
     return string.sub(s1,1, #s2) == s2
 end
 
+--- Check if `s1` ends with `s2`.
+--- --
+--- @param s1 string
+--- @param s2 string
+--- @return string | boolean
 function pystring:endswith(s1, s2)
     return s2 == '' or string.sub(s1,-#s2) == s2
 end
 
+--- Get the first ocurrence of `s2` in `s1` beginning from `start`
+--- and finishing at `stop`.
+--- --
+--- @param s1 string
+--- @param s2 string
+--- @param start integer
+--- @param stop integer
+--- @return integer
 function pystring:find(s1, s2, start, stop)
     start = start or 1
     stop = stop or -1
@@ -458,6 +560,15 @@ function pystring:find(s1, s2, start, stop)
     return res or -1
 end
 
+--- Get the first ocurrence of `s2` in `s1` beginning from `start`
+--- and finishing at `stop` but working with the reversed version of
+--- `s1`.
+--- --
+--- @param s1 string
+--- @param s2 string
+--- @param start integer
+--- @param stop integer
+--- @return integer
 function pystring:rfind(s1, s2, start, stop)
     start = start or 1
     stop = stop or -1
@@ -474,6 +585,14 @@ function pystring:rfind(s1, s2, start, stop)
     end
 end
 
+--- Get the first ocurrence of `s2` in `s1` starting at `start`
+--- and finishing at `stop`.
+--- --
+--- @param s1 string
+--- @param s2 string
+--- @param start integer
+--- @param stop integer
+--- @return integer
 function pystring:index(s1, s2, start, stop)
     local res = pystring:find(s1, s2, start, stop)
     if res < 0 then
@@ -482,6 +601,14 @@ function pystring:index(s1, s2, start, stop)
     return res
 end
 
+--- Get the index of first `s2` ocurrence in `s1` beginning from `start`
+--- and ending at `stop`
+--- --
+--- @param s1 string
+--- @param s2 string
+--- @param start integer
+--- @param stop integer
+--- @return integer
 function pystring:rindex(s1, s2, start, stop)
     local res = pystring:rfind(s1, s2, start, stop)
     if res < 0 then
@@ -529,6 +656,23 @@ function pystring:expandtabs(s, tabs)
     tabs = tabs or 4
     local repl = string.rep(" ", tabs)
     return string.gsub(s, "\t", repl)
+end
+
+--- Focus on the file content without worrying about the file descriptor.
+--- --
+--- @param file_name string # Name of the file
+--- @param executor function # function that works with the file descriptor
+--- @param file_opt string # file options. See `io.open`
+function pystring:with(file_name, executor, file_opt)
+    local f = io.open(file_name, file_opt or 'r')
+    local r = nil
+    if f then
+      r = executor(f)
+    else
+      error("Problems opening "..file_name)
+    end
+    f:close()
+    return r
 end
 
 return pystring
