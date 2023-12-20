@@ -659,15 +659,28 @@ function pystring:expandtabs(s, tabs)
 end
 
 --- Focus on the file content without worrying about the file descriptor.
+--- `executor` function evals every line if `mode` is set to "line" or the full
+--- file content if it is set to "raw" or `nil`.
 --- --
 --- @param file_name string # Name of the file
---- @param executor function # function that works with the file descriptor
---- @param file_opt string # file options. See `io.open`
-function pystring:with(file_name, executor, file_opt)
+--- @param executor function # Function that works with the file descriptor
+--- @param mode string # {"lines", "raw" | nil} How the file will be processed.
+--- @param file_opt string # File options. See `io.open`
+--- @return any
+function pystring:with(file_name, executor, mode, file_opt)
     local f = io.open(file_name, file_opt or 'r')
     local r = nil
     if f then
-      r = executor(f)
+      if mode == 'lines' then
+        for l in f:lines("l") do
+          r = executor(l,r) -- note that r can be skipped on executor implementation
+        end
+      elseif (not mode or mode == 'raw') then
+        local _raw_file = f:read("a")
+        r = executor(_raw_file)
+      else
+        error(string.format('Invalid mode = %s option',mode))
+      end
     else
       error("Problems opening "..file_name)
     end
