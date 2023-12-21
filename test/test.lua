@@ -180,14 +180,14 @@ assert(pystring:isalnum("123FG") == true)
 assert(pystring:isalnum("123.45") == false)
 assert(pystring:isalnum("123 45") == false)
 
--- istilte
-assert(pystring:istilte("Aaa") == true)
-assert(pystring:istilte("aaa") == false)
-assert(pystring:istilte("Aaa0") == false)
-assert(pystring:istilte("A") == true)
+-- istitle
+assert(pystring:istitle("Aaa") == true)
+assert(pystring:istitle("aaa") == false)
+assert(pystring:istitle("Aaa0") == false)
+assert(pystring:istitle("A") == true)
 
 -- isfloat
-assert(pystring:isfloat("1234") == true)
+assert(pystring:isfloat("1234") == false)
 assert(pystring:isfloat("00ABCDEF") == false)
 assert(pystring:isfloat("123FG") == false)
 assert(pystring:isfloat("123.45") == true)
@@ -221,5 +221,20 @@ assert(pystring:replace("hello %. %*.", "%.", " ") == "hello   %*.")
 
 -- expandtabs
 assert(pystring:expandtabs("hello\tworld.") == "hello    world.")
+
+-- with
+local file = 'test_file.txt'
+local content = "hello there!\nWhat's up?"
+local f = io.open(file,'w')
+if not f then
+    error(string.format("io.open failed opening %s file in write mode",file))
+end
+f:write(content)
+f:close()
+local raw_content = pystring:with(file, function(s,l)
+    return s .. (l and l or '')
+end, 'raw')
+os.execute('rm ' .. file)
+assert(content == raw_content)
 
 print("test ok.")
