@@ -670,19 +670,22 @@ end
 function pystring:with(file_name, executor, mode, file_opt)
     local f = io.open(file_name, file_opt or 'r')
     local r = nil
+    if file_opt and file_opt:match('w') then
+        error"pystring:with doesn't work with writing mode files"
+    end
     if f then
-      if mode == 'lines' then
-        for l in f:lines("l") do
-          r = executor(l,r) -- note that r can be skipped on executor implementation
+        if mode == 'lines' then
+            for l in f:lines("l") do
+                r = executor(l,r) -- note that r can be skipped on executor implementation
+            end
+        elseif (not mode or mode == 'raw') then
+            local _raw_file = f:read("a")
+            r = executor(_raw_file)
+        else
+            error(string.format('Invalid mode = %s option',mode))
         end
-      elseif (not mode or mode == 'raw') then
-        local _raw_file = f:read("a")
-        r = executor(_raw_file)
-      else
-        error(string.format('Invalid mode = %s option',mode))
-      end
     else
-      error("Problems opening "..file_name)
+        error("Problems opening "..file_name)
     end
     f:close()
     return r
