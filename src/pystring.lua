@@ -63,7 +63,7 @@ end
 --- @param s string
 --- @param n integer
 --- @return string
-function pystring:shift(s, n)  -- position for right, negative for left
+function pystring.shift(s, n)  -- position for right, negative for left
     local len = #s
     if len == 0 then
         return s
@@ -88,7 +88,7 @@ end
 --- --
 --- @param s string
 --- @return boolean
-function pystring:islower(s)
+function pystring.islower(s)
     local match = string.match(s, "[%l%s%p]+")
     if not match then
         return false
@@ -100,7 +100,7 @@ end
 --- --
 --- @param s string
 --- @return boolean
-function pystring:isupper(s)
+function pystring.isupper(s)
     local match = string.match(s, "[%u%s%p]+")
     if not match then
         return false
@@ -113,7 +113,7 @@ end
 --- --
 --- @param s string
 --- @return boolean
-function pystring:isdigit(s)
+function pystring.isdigit(s)
     local match = string.match(s, "%d+")
     if not match then
         return false
@@ -125,7 +125,7 @@ end
 --- --
 --- @param s string
 --- @return boolean
-function pystring:isinteger(s)
+function pystring.isinteger(s)
     local match = string.match(s, "^[%-%+]?%d+$")
     return match and true or false
 end
@@ -135,7 +135,7 @@ end
 --- --
 --- @param s string
 --- @return boolean
-function pystring:ishex(s)
+function pystring.ishex(s)
     local match = string.match(s, "%x+")
     if not match then
         return false
@@ -148,7 +148,7 @@ end
 --- --
 --- @param s string
 --- @return boolean
-function pystring:isalnum(s)
+function pystring.isalnum(s)
     local match = string.match(s, "%w+")
     if not match then
         return false
@@ -161,7 +161,7 @@ end
 --- --
 --- @param s string
 --- @return boolean
-function pystring:istitle(s)
+function pystring.istitle(s)
     local match = string.match(s, "%u%l*")
     if not match then
         return false
@@ -174,7 +174,7 @@ end
 --- --
 --- @param s string
 --- @return boolean
-function pystring:isfloat(s)
+function pystring.isfloat(s)
     local re = "^[%-%+]?%d*%.%d+$"
     return string.match(s, re) ~= nil
 end
@@ -183,7 +183,7 @@ end
 --- --
 --- @param s string
 --- @return string
-function pystring:lower(s)
+function pystring.lower(s)
     return string.lower(s)
 end
 
@@ -191,7 +191,7 @@ end
 --- --
 --- @param s string
 --- @return string
-function pystring:casefold(s)
+function pystring.casefold(s)
     return string.lower(s)
 end
 
@@ -199,7 +199,7 @@ end
 --- --
 --- @param s string
 --- @return string
-function pystring:upper(s)
+function pystring.upper(s)
     return string.upper(s)
 end
 
@@ -207,7 +207,7 @@ end
 --- --
 --- @param s string
 --- @return string
-function pystring:swapcase(s)
+function pystring.swapcase(s)
     local swaps = {}
     local ascA, ascZ, asc_a, asc_z = string.byte('A'), string.byte('Z'), string.byte('a'), string.byte('z')
     for i=1, #s do
@@ -227,7 +227,7 @@ end
 --- --
 --- @param s string
 --- @return string
-function pystring:capitalize(s)
+function pystring.capitalize(s)
     if #s < 1 then
         return s
     end
@@ -240,13 +240,13 @@ end
 --- --
 --- @param s string
 --- @return string
-function pystring:title(s)
+function pystring.title(s)
     if #s < 1 then
         return s
     end
-    local ss = pystring:split(s, " ")
+    local ss = pystring.split(s, " ")
     for i = 1, #ss do
-        ss[i] = pystring:capitalize(ss[i])
+        ss[i] = pystring.capitalize(ss[i])
     end
     return table.concat(ss, " ")
 end
@@ -255,14 +255,14 @@ end
 --- --
 --- @param s string
 --- @return string
-function pystring:capwords(s)
-    local lines = pystring:split(s, "\n")
+function pystring.capwords(s)
+    local lines = pystring.split(s, "\n")
     local rLines = {}
     for i, line in ipairs(lines) do
         local rWords = {}
-        local words = pystring:split(line, " ")
+        local words = pystring.split(line, " ")
         for j, word in ipairs(words) do
-            rWords[j] = pystring:capitalize(word)
+            rWords[j] = pystring.capitalize(word)
         end
         rLines[i] = table.concat(rWords, " ")
     end
@@ -275,7 +275,7 @@ end
 --- @param len integer
 --- @param ch string
 --- @return string
-function pystring:ljust(s, len, ch)
+function pystring.ljust(s, len, ch)
     ch = ch or " "
     if #ch ~= 1 then
         error("pad string master a single word, not " .. ch)
@@ -295,7 +295,7 @@ end
 --- @param len integer
 --- @param ch string
 --- @return string
-function pystring:rjust(s, len, ch)
+function pystring.rjust(s, len, ch)
     ch = ch or " "
     if #ch ~= 1 then
         error("pad string master a single word, not " .. ch)
@@ -315,7 +315,7 @@ end
 --- @param len integer
 --- @param ch string
 --- @return string
-function pystring:center(s, len, ch)
+function pystring.center(s, len, ch)
     ch = ch or " "
     if #ch ~= 1 then
         error("pad string master a single word, not " .. ch)
@@ -337,8 +337,8 @@ end
 --- @param s string
 --- @param len integer
 --- @return string
-function pystring:zfill(s, len)
-    return pystring:ljust(s, len, "0")
+function pystring.zfill(s, len)
+    return pystring.ljust(s, len, "0")
 end
 
 --- Convert the given `s` string in a table of substrings 
@@ -348,7 +348,7 @@ end
 --- @param s string
 --- @param delimiter string
 --- @param n integer
-function pystring:split(s, delimiter, n)
+function pystring.split(s, delimiter, n)
     local result = {}
     if not delimiter or delimiter == "" then  -- for blank, gsub multi blank to single
         s = string.gsub(s, "%s+", " ")
@@ -386,7 +386,7 @@ end
 --- @param s string
 --- @param del string
 --- @return table<string> | nil
-function pystring:partition(s, del)
+function pystring.partition(s, del)
     local result = {}
     del = del or " "
     local delimiter = setupDelimiter(del)
@@ -414,7 +414,7 @@ end
 --- @param delimiter string
 --- @param n integer
 --- @return table<string>
-function pystring:rsplit(s, delimiter, n)
+function pystring.rsplit(s, delimiter, n)
     local result = {}
     local n = n or 2 ^ 63 - 1
     local len = #s + 1
@@ -449,7 +449,7 @@ function pystring:rsplit(s, delimiter, n)
 end
 
 --- 
-function pystring:rpartition(s, del)
+function pystring.rpartition(s, del)
     local result = {}
     del = del or " "
     local rs = string.reverse(s)
@@ -472,8 +472,8 @@ end
 --- --
 --- @param s string
 --- @return table<string>
-function pystring:splitlines(s)
-    return pystring:split(s, '\n')
+function pystring.splitlines(s)
+    return pystring.split(s, '\n')
 end
 
 --- Remove first `chars` string of `s`. 
@@ -481,7 +481,7 @@ end
 --- @param s string
 --- @param chars string
 --- @return string
-function pystring:lstrip(s, chars)
+function pystring.lstrip(s, chars)
     local patten = "^" .. setupPatten(chars) .. "+"
     local _, ends = string.find(s, patten)
     if ends then
@@ -496,7 +496,7 @@ end
 --- @param s string
 --- @param chars string
 --- @return string
-function pystring:rstrip(s, chars)
+function pystring.rstrip(s, chars)
     local patten = setupPatten(chars) .. "+$"
     local last = string.find(s, patten)
     if last then
@@ -512,9 +512,9 @@ end
 --- @param s string
 --- @param chars string
 --- @return string
-function pystring:strip(s, chars)
-    local res = pystring:lstrip(s, chars)
-    return pystring:rstrip(res, chars)
+function pystring.strip(s, chars)
+    local res = pystring.lstrip(s, chars)
+    return pystring.rstrip(res, chars)
 end
 
 --- Joins an array of *string* `strings` with `delim` between.
@@ -522,7 +522,7 @@ end
 --- @param delim string
 --- @param strings table<string>
 --- @return string
-function pystring:join(delim, strings)
+function pystring.join(delim, strings)
     return table.concat(strings, delim)
 end
 
@@ -531,7 +531,7 @@ end
 --- @param s1 string
 --- @param s2 string
 --- @return string | boolean
-function pystring:startswith(s1, s2)
+function pystring.startswith(s1, s2)
     return string.sub(s1,1, #s2) == s2
 end
 
@@ -540,7 +540,7 @@ end
 --- @param s1 string
 --- @param s2 string
 --- @return string | boolean
-function pystring:endswith(s1, s2)
+function pystring.endswith(s1, s2)
     return s2 == '' or string.sub(s1,-#s2) == s2
 end
 
@@ -552,7 +552,7 @@ end
 --- @param start integer
 --- @param stop integer
 --- @return integer
-function pystring:find(s1, s2, start, stop)
+function pystring.find(s1, s2, start, stop)
     start = start or 1
     stop = stop or -1
     s1 = string.sub(s1, start, stop)
@@ -569,7 +569,7 @@ end
 --- @param start integer
 --- @param stop integer
 --- @return integer
-function pystring:rfind(s1, s2, start, stop)
+function pystring.rfind(s1, s2, start, stop)
     start = start or 1
     stop = stop or -1
     s1 = string.sub(s1, start, stop)
@@ -593,8 +593,8 @@ end
 --- @param start integer
 --- @param stop integer
 --- @return integer
-function pystring:index(s1, s2, start, stop)
-    local res = pystring:find(s1, s2, start, stop)
+function pystring.index(s1, s2, start, stop)
+    local res = pystring.find(s1, s2, start, stop)
     if res < 0 then
         error(s2 .. " is  not in " .. s1)
     end
@@ -609,8 +609,8 @@ end
 --- @param start integer
 --- @param stop integer
 --- @return integer
-function pystring:rindex(s1, s2, start, stop)
-    local res = pystring:rfind(s1, s2, start, stop)
+function pystring.rindex(s1, s2, start, stop)
+    local res = pystring.rfind(s1, s2, start, stop)
     if res < 0 then
         error(s2 .. " is  not in " .. s1)
     end
@@ -623,7 +623,7 @@ end
 --- @param s string
 --- @param find string
 --- @return integer
-function pystring:count(s, find)
+function pystring.count(s, find)
     local i = 0
     local patten = setupPatten(find)
     for _ in string.gmatch(s, patten) do
@@ -640,7 +640,7 @@ end
 --- @param repl string # Replacement
 --- @param n integer # Number of occurrences until stop counting.
 --- @return string, integer
-function pystring:replace(s, find, repl, n)
+function pystring.replace(s, find, repl, n)
     local patten = setupPatten(find)
     repl = setupRepl(repl)
 
@@ -652,7 +652,7 @@ end
 --- @param s string
 --- @param tabs integer
 --- @return string, integer
-function pystring:expandtabs(s, tabs)
+function pystring.expandtabs(s, tabs)
     tabs = tabs or 4
     local repl = string.rep(" ", tabs)
     return string.gsub(s, "\t", repl)
@@ -667,11 +667,11 @@ end
 --- @param mode string # {"lines", "raw" | nil} How the file will be processed.
 --- @param file_opt string # File options. See `io.open`
 --- @return any
-function pystring:with(file_name, executor, mode, file_opt)
+function pystring.with(file_name, executor, mode, file_opt)
     local f = io.open(file_name, file_opt or 'r')
     local r = nil
     if file_opt and file_opt:match('w') then
-        error"pystring:with doesn't work with writing mode files"
+        error"pystring.with doesn't work with writing mode files"
     end
     if f then
         if mode == 'lines' then
@@ -679,7 +679,7 @@ function pystring:with(file_name, executor, mode, file_opt)
                 r = executor(l,r) -- note that r can be skipped on executor implementation
             end
         elseif (not mode or mode == 'raw') then
-            local _raw_file = f:read("a")
+            local _raw_file = f:read("*a")
             r = executor(_raw_file)
         else
             error(string.format('Invalid mode = %s option',mode))
