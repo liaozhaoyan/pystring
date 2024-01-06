@@ -1,5 +1,5 @@
 package = "pystring"
-version = "1.0-3"
+version = "2.0-1"
 source = {
     url = "git://github.com/liaozhaoyan/pystring",
 }
