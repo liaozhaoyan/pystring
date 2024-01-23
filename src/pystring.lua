@@ -274,7 +274,7 @@ end
 --- --
 --- @param s string
 --- @param len integer
---- @param ch string
+--- @param ch? string # Default " "
 --- @return string
 function pystring.ljust(s, len, ch)
     ch = ch or " "
@@ -294,7 +294,7 @@ end
 --- --
 --- @param s string
 --- @param len integer
---- @param ch string
+--- @param ch? string # Default " "
 --- @return string
 function pystring.rjust(s, len, ch)
     ch = ch or " "
@@ -314,7 +314,7 @@ end
 --- --
 --- @param s string
 --- @param len integer
---- @param ch string
+--- @param ch? string # Default " "
 --- @return string
 function pystring.center(s, len, ch)
     ch = ch or " "
@@ -347,8 +347,8 @@ end
 --- defined by `n` which is 2^63 - 1 (*MaxInteger*) by default.
 --- --
 --- @param s string
---- @param delimiter string
---- @param n integer
+--- @param delimiter? string
+--- @param n? integer # Default MaxInteger
 function pystring.split(s, delimiter, n)
     local result = {}
     if not delimiter or delimiter == "" then  -- for blank, gsub multi blank to single
@@ -385,7 +385,7 @@ end
 --- the delimiter and the right side.
 --- --
 --- @param s string
---- @param del string
+--- @param del? string
 --- @return table<string> | nil
 function pystring.partition(s, del)
     local result = {}
@@ -413,7 +413,7 @@ end
 --- --
 --- @param s string
 --- @param delimiter string
---- @param n integer
+--- @param n? integer # default is MaxInteger
 --- @return table<string>
 function pystring.rsplit(s, delimiter, n)
     local result = {}
@@ -450,6 +450,8 @@ function pystring.rsplit(s, delimiter, n)
 end
 
 --- 
+--- @param del? string
+--- @return table<string> | nil
 function pystring.rpartition(s, del)
     local result = {}
     del = del or " "
@@ -550,8 +552,8 @@ end
 --- --
 --- @param s1 string
 --- @param s2 string
---- @param start integer
---- @param stop integer
+--- @param start? integer # Default 1
+--- @param stop? integer # Default -1 --> end
 --- @return integer
 function pystring.find(s1, s2, start, stop)
     start = start or 1
@@ -567,8 +569,8 @@ end
 --- --
 --- @param s1 string
 --- @param s2 string
---- @param start integer
---- @param stop integer
+--- @param start? integer # Default 1
+--- @param stop? integer # Default -1 --> end
 --- @return integer
 function pystring.rfind(s1, s2, start, stop)
     start = start or 1
@@ -651,7 +653,7 @@ end
 --- Expand blank spaces in the string by 'tabs' times.
 --- --
 --- @param s string
---- @param tabs integer
+--- @param tabs? integer # Default is 4
 --- @return string, integer
 function pystring.expandtabs(s, tabs)
     tabs = tabs or 4
@@ -681,8 +683,8 @@ end
 --- --
 --- @param file_name string # Name of the file
 --- @param mode string # {"lines", "raw" | nil} How the file will be processed, default raw.
---- @param executor function # Function that works with the file descriptor,
---- @param file_opt string # File options. See `io.open`, default r
+--- @param executor? function # Function that works with the file descriptor,
+--- @param file_opt? string # File options. See `io.open`, default `r`
 --- @return any
 function pystring.with(file_name, mode, executor, file_opt)
     mode = mode or "raw"
