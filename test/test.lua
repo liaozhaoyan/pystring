@@ -231,10 +231,14 @@ if not f then
 end
 f:write(content)
 f:close()
-local raw_content = pystring.with(file, function(s,l)
-    return s .. (l and l or '')
-end, 'raw')
+local withContent = pystring.with(file)
+assert(withContent == content)
+withContent = pystring.with(file, nil, function(s) return pystring.lower(s) end)
+assert(withContent == pystring.lower(content))
+local withTable = pystring.with(file, "lines")
+assert(pystring.join("\n", withTable) == content)
+withTable = pystring.with(file, "lines", function(s) return pystring.upper(s) end)
+assert(pystring.join("\n", withTable) == pystring.upper(content))
 os.execute('rm ' .. file)
-assert(content == raw_content)
 
 print("test ok.")

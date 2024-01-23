@@ -659,25 +659,64 @@ function pystring.expandtabs(s, tabs)
     return string.gsub(s, "\t", repl)
 end
 
+--- default callback function for pystring.with, mode lines
+--- --
+--- @param line string
+--- @return string or nil, nil will break lines loop
+local function withLines(line)
+    return line
+end
+
+--- default callback function for pystring.with, mode raw
+--- --
+--- @param content string
+--- @return string
+local function withRaw(content)
+    return content
+end
+
 --- Focus on the file content without worrying about the file descriptor.
 --- `executor` function evals every line if `mode` is set to "line" or the full
 --- file content if it is set to "raw" or `nil`.
 --- --
 --- @param file_name string # Name of the file
---- @param executor function # Function that works with the file descriptor
---- @param mode string # {"lines", "raw" | nil} How the file will be processed.
---- @param file_opt string # File options. See `io.open`
+--- @param mode string # {"lines", "raw" | nil} How the file will be processed, default raw.
+--- @param executor function # Function that works with the file descriptor,
+--- @param file_opt string # File options. See `io.open`, default r
 --- @return any
-function pystring.with(file_name, executor, mode, file_opt)
-    local f = io.open(file_name, file_opt or 'r')
-    local r = nil
-    if file_opt and file_opt:match('w') then
-        error"pystring.with doesn't work with writing mode files"
+function pystring.with(file_name, mode, executor, file_opt)
+    mode = mode or "raw"
+    file_opt = file_opt or "r"
+
+    if not executor then
+        if mode == "raw" then
+            executor = withRaw
+        elseif mode == "lines" then
+            executor = withLines
+        else
+            error(string.format("bad mode %s for pystring.with", mode))
+        end
     end
+
+    if file_opt:match('w') or file_opt:match('a') then
+        error("pystring.with doesn't work with writing mode files")
+    end
+
+    local f = io.open(file_name, file_opt)
+    local r
+
     if f then
         if mode == 'lines' then
+            r = {}
+            local c = 1
             for l in f:lines("l") do
-                r = executor(l,r) -- note that r can be skipped on executor implementation
+                local res = executor(l) -- note that r can be skipped on executor implementation
+                if res then
+                    r[c] = res
+                    c = c + 1
+                else
+                    break
+                end
             end
         elseif (not mode or mode == 'raw') then
             local _raw_file = f:read("*a")
