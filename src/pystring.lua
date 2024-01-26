@@ -7,55 +7,31 @@
 
 local pystring = {}
 
-local function checkLuaReReserve(ch)
-    local luaReReserve = "().%+-*?[]^$"
-    for c in string.gmatch(luaReReserve, ".") do
-        if c == ch then
-            return "%" .. ch
-        end
-    end
-    return ch
-end
+-- If the string length is greater than that critical value,
+-- The time cost of a string reversal operation will be very high
+local criticalSizeofReverse = 4096
 
 local function setupDelimiter(delimiter)
-    local rt = {}
-    local i = 0
-    for c in string.gmatch(delimiter, ".") do
-        i = i + 1
-        if c == " " then
-            rt[i] = "%s"
-        else
-            rt[i] = checkLuaReReserve(c)
-        end
+    if delimiter then
+        return delimiter:gsub("([%W])", "%%%1")
+    else
+        return "%s+"
     end
-    return table.concat(rt)
 end
 
 local function setupPatten(s)
-    local patten
     if s == nil then
-        patten = "[%s\t\n]"
+        return "[%s\t\n]"
     else
-        patten = setupDelimiter(s)
+        return setupDelimiter(s)
     end
-    return patten
 end
 
-local function _setupRepl(repl)
-    local rt = {}
-    local i = 0
-    for c in string.gmatch(repl, ".") do
-        i = i + 1
-        rt[i] = checkLuaReReserve(c)
-    end
-    return table.concat(rt)
-end
-
-local function setupRepl(s)
-    if s == nil then
+local function setupRepl(repl)
+    if type(repl) ~= "string" then
         error("repl must be a string.")
     else
-        return _setupRepl(s)
+        return repl:gsub("([%W])", "%%%1")
     end
 end
 
@@ -209,19 +185,13 @@ end
 --- @param s string
 --- @return string
 function pystring.swapcase(s)
-    local swaps = {}
-    local ascA, ascZ, asc_a, asc_z = string.byte('A'), string.byte('Z'), string.byte('a'), string.byte('z')
-    for i=1, #s do
-        local ch = string.byte(s, i)
-        if ch >= ascA and ch <= ascZ  then
-            swaps[i] = string.char(ch + 32)
-        elseif ch >= asc_a and ch <= asc_z then
-            swaps[i] = string.char(ch - 32)
-        else
-            swaps[i] = string.char(ch)
-        end
+    local function swapchar(c)
+        local lc = string.lower(c)
+        return (lc == c) and string.upper(c) or lc
     end
-    return table.concat(swaps)
+
+    local result = s:gsub("%a", swapchar)
+    return result
 end
 
 --- Capitalize `s` word.
@@ -344,37 +314,38 @@ end
 
 --- Convert the given `s` string in a table of substrings 
 --- delimited by `delimiter`. The maximum number of substrings is
---- defined by `n` which is 2^63 - 1 (*MaxInteger*) by default.
+--- defined by `n` which is MaxInteger by default.
 --- --
 --- @param s string
 --- @param delimiter? string
 --- @param n? integer # Default MaxInteger
 function pystring.split(s, delimiter, n)
     local result = {}
-    if not delimiter or delimiter == "" then  -- for blank, gsub multi blank to single
-        s = string.gsub(s, "%s+", " ")
-    end
-    delimiter = setupDelimiter(delimiter or " ")
-    n = n or 2 ^ 63 - 1
+    delimiter = setupDelimiter(delimiter)
 
     local nums = 0
     local beg = 1
-    local c = 0
+    local c = 1
+
+    if n then  --n must be an integer greater than 0
+        assert(type(n) == "number" and n > 0 and n == math.floor(n), "bad input" .. n)
+    end
+
     while (true) do
         local iBeg, iEnd = string.find(s, delimiter, beg)
-        if (iBeg) then
-            c = c + 1
+        if (iBeg) then  -- matched
             result[c] = string.sub(s, beg, iBeg - 1)
+            c = c + 1
             beg = iEnd + 1
             nums = nums + 1
-            if nums >= n then
-                c = c + 1
+            if n and nums >= n then
                 result[c] = string.sub(s, beg, #s)
+                c = c + 1
                 break
             end
         else
-            c = c + 1
             result[c] = string.sub(s, beg, #s)
+            c = c + 1
             break
         end
     end
@@ -409,42 +380,81 @@ local function reverseTable(t)
     end
 end
 
---- Split the reverse of `s` with the reverse of `delimiter`
+--- Convert the given `s` string in a table of substrings from right
 --- --
 --- @param s string
 --- @param delimiter string
 --- @param n? integer # default is MaxInteger
 --- @return table<string>
 function pystring.rsplit(s, delimiter, n)
+    if not n then  -- if n is nil, Equivalent to split
+        return pystring.split(s, delimiter)
+    end
+
+    assert(type(n) == "number" and n > 0 and n == math.floor(n), "bad input" .. n)
+
     local result = {}
-    local n = n or 2 ^ 63 - 1
     local len = #s + 1
+    if len >= criticalSizeofReverse then  -- a big string? Reversing a string can be time-consuming
+        local res = pystring.split(s, delimiter)
+        local resLen = #res
+        n = n + 1  -- The length of the returned array is equal to the number of splits plus one
+        if resLen <= n then
+            return res
+        end
+
+        if delimiter then  -- not blank?
+            result[1] = table.concat(res, delimiter, 1, resLen - n + 1)
+        else  -- blank,
+            local cells = {}
+            local pos = 1
+            local next
+            local c = 1
+
+            for i = 1, resLen - n + 1 do
+                cells[c] = res[i]
+                c = c + 1
+
+                pos = pos + #res[i]
+                next = string.find(s, "%S", pos)
+                cells[c] = string.rep(" ", next - pos)
+                c = c + 1
+                pos = next
+            end
+            result[1] = table.concat(cells, "", 1, #cells - 1)
+        end
+        for i = 1, n do
+            result[1 + i] = res[n + i]
+        end
+        return result
+    end
+
+    -- else reverse the string may be a better way
     local rs = string.reverse(s)
-    local rDel = string.reverse(delimiter or " ")
+    local rDel = string.reverse(delimiter)
     rDel = setupDelimiter(rDel)
     local nums = 0
     local beg = 1
-    local c = 0
+    local c = 1
 
     while (true) do
         local iBeg, iEnd = string.find(rs, rDel, beg)
         if (iBeg) then
-            c = c + 1
             result[c] = string.sub(s, len - (iBeg - 1),len - beg)
+            c = c + 1
             beg = iEnd + 1
             nums = nums + 1
             if nums >= n then
-                c = c + 1
                 result[c] = string.sub(s, 1, len - beg)
                 break
             end
         else
-            c = c + 1
             result[c] = string.sub(s, 1, len - beg)
+            c = c + 1
             break
         end
     end
-    --return result
+
     reverseTable(result)
     return result
 end
@@ -485,7 +495,7 @@ end
 --- @param chars string
 --- @return string
 function pystring.lstrip(s, chars)
-    local patten = "^" .. setupPatten(chars) .. "+"
+    local patten = table.concat({"^", setupPatten(chars), "+"})
     local _, ends = string.find(s, patten)
     if ends then
         return string.sub(s, ends + 1, -1)
@@ -578,6 +588,21 @@ function pystring.rfind(s1, s2, start, stop)
     s1 = string.sub(s1, start, stop)
 
     local len = #s1
+
+    if len >= criticalSizeofReverse then  --  a big string?
+        local res = -1
+        local current_pos = 0
+        while true do
+            local start_pos, end_pos = string.find(s1, s2, current_pos + 1, false)
+            if not start_pos then
+                break
+            end
+            res = start_pos
+            current_pos = end_pos
+        end
+        return res
+    end
+
     local lFind = #s2
     local rs1, rs2 = string.reverse(s1), string.reverse(s2)
     local i = string.find(rs1, rs2, 1, false)

@@ -4,7 +4,7 @@
 --- DateTime: 2023/1/3 9:31 PM
 ---
 
-package.path = package.path .. ";../src/?.lua;"
+package.path = "../src/?.lua;" .. package.path
 
 local pystring = require("pystring")
 
@@ -38,6 +38,26 @@ assert(ret[1] == "hello*lua ")
 ret = pystring.rsplit("hello*lua *lua language", "lua", 1)
 assert(#ret == 2)
 assert(ret[1] == "hello*lua *")
+-- rsplit a large string
+local largeStr = string.rep("a", 1024 * 1024) .. "  " .. "b" .. " " .. "c"
+ret = pystring.rsplit(largeStr, nil, 2)
+assert(#ret == 3)
+assert(ret[2] == "b")
+assert(ret[3] == "c")
+ret = pystring.rsplit(largeStr, nil, 1)
+assert(#ret == 2)
+assert(ret[2] == "c")
+assert(string.sub(ret[1], -4, -1) == "a  b")
+-- rsplit a large string, delimiter is string
+largeStr = string.rep("a", 1024 * 1024) .. "del" .. "b" .. "del" .. "c"
+ret = pystring.rsplit(largeStr, "del", 2)
+assert(#ret == 3)
+assert(ret[2] == "b")
+assert(ret[3] == "c")
+ret = pystring.rsplit(largeStr, "del", 1)
+assert(#ret == 2)
+assert(ret[2] == "c")
+assert(string.sub(ret[1], -5, -1) == "adelb")
 
 -- split by multi string
 ret = pystring.split("hello*lua *language", "*l")
@@ -120,6 +140,9 @@ assert(pystring.find("hello world.", "hEllo") == -1)
 -- rfind
 assert(pystring.rfind("hello world hello.", "hello") == 12)
 assert(pystring.rfind("hello world hello.", "hEllo") == -1)
+-- rfind by large string
+largeStr = string.rep("a", 1024 * 1024) .. "del" .. "b" .. "del" .. "c"
+assert(pystring.rfind(largeStr, "del") == #largeStr - 3)
 
 -- count
 assert(pystring.count("hello world hello.", "hello") == 2)
