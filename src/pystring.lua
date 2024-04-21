@@ -71,11 +71,8 @@ end
 --- @param s string
 --- @return boolean
 function pystring.islower(s)
-    local matched = match(s, "[%l%s%p]+")
-    if not matched then
-        return false
-    end
-    return #matched == #s
+    local matched = match(s, "^[%l%s%p]+$")
+    return matched and true or false
 end
 
 --- True if the string has only uppercase characters, false if not.
@@ -83,11 +80,8 @@ end
 --- @param s string
 --- @return boolean
 function pystring.isupper(s)
-    local matched = match(s, "[%u%s%p]+")
-    if not matched then
-        return false
-    end
-    return #matched == #s
+    local matched = match(s, "^[%u%s%p]+$")
+    return matched and true or false
 end
 
 --- If the string has only digits it returns true, otherwise it will be 
@@ -96,11 +90,8 @@ end
 --- @param s string
 --- @return boolean
 function pystring.isdigit(s)
-    local matched = match(s, "%d+")
-    if not matched then
-        return false
-    end
-    return #matched == #s
+    local matched = match(s, "^%d+$")
+    return matched and true or false
 end
 
 --- If the string is an integer expression it returns true, otherwise false.
@@ -118,11 +109,8 @@ end
 --- @param s string
 --- @return boolean
 function pystring.ishex(s)
-    local matched = match(s, "%x+")
-    if not matched then
-        return false
-    end
-    return #matched == #s
+    local matched = match(s, "^%x+$")
+    return matched and true or false
 end
 
 --- If the string is a combination of alfanumeric characters, the function 
@@ -131,11 +119,8 @@ end
 --- @param s string
 --- @return boolean
 function pystring.isalnum(s)
-    local matched = match(s, "%w+")
-    if not matched then
-        return false
-    end
-    return #matched == #s
+    local matched = match(s, "^%w+$")
+    return matched and true or false
 end
 
 --- If the string is a title expression, the function  returns true, otherwise
@@ -144,11 +129,8 @@ end
 --- @param s string
 --- @return boolean
 function pystring.istitle(s)
-    local matched = match(s, "%u%l*")
-    if not matched then
-        return false
-    end
-    return #matched == #s
+    local matched = match(s, "^%u%l*$")
+    return matched and true or false
 end
 
 --- If the string has a float expression, the function will return true, in other
