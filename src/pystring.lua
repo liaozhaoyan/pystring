@@ -11,6 +11,11 @@ local gsub = string.gsub
 local match = string.match
 local lower = string.lower
 local upper = string.upper
+local format = string.format
+local tostring = tostring
+local error = error
+local type = type
+local ipairs = ipairs
 
 -- If the string length is greater than that critical value,
 -- The time cost of a string reversal operation will be very high
@@ -57,12 +62,12 @@ function pystring.shift(s, n)  -- positive for right, negative for left
         local offset = len - n
         local s1 = sub(s, offset + 1)
         local s2 = sub(s, 1, offset)
-        return s1 .. s2
+        return format("%s%s", s1, s2)
     else   -- "abcd << 1"
         local offset = len + n
         local s1 = sub(s, offset + 1)
         local s2 = sub(s, 1, offset)
-        return s2 .. s1
+        return format("%s%s", s1, s2)
     end
 end
 
@@ -191,7 +196,7 @@ function pystring.capitalize(s)
     end
     local s1 = sub(s, 1, 1)
     local s2 = sub(s, 2)
-    return upper(s1) .. s2
+    return format("%s%s", upper(s1), s2)
 end
 
 local string_find = string.find
@@ -214,7 +219,9 @@ function pystring.split(s, delimiter, n)
     local c = 1
 
     if n then  --n must be an integer greater than 0
-        assert(type(n) == "number" and n > 0 and n == floor(n), "bad input" .. n)
+        if type(n) ~= "number" or n <= 0 or n ~= floor(n) then
+            error(format("bad input %s", tostring(n)))
+        end
     end
 
     while (true) do
@@ -279,7 +286,9 @@ function pystring.rsplit(s, delimiter, n)
         return split(s, delimiter)
     end
 
-    assert(type(n) == "number" and n > 0 and n == floor(n), "bad input" .. n)
+    if type(n) ~= "number" or n <= 0 or n ~= floor(n) then
+        error(format("bad input %s", tostring(n)))
+    end
 
     local result = {}
     local len = #s + 1
@@ -413,12 +422,12 @@ end
 function pystring.ljust(s, len, ch)
     ch = ch or " "
     if #ch ~= 1 then
-        error("pad string master a single word, not " .. ch)
+        error(format("pad string master a single word, not %s", tostring(ch)))
     end
     local delta = len - #s
     if delta > 0 then
         local pad = rep(ch, delta)
-        return pad .. s
+        return format("%s%s", pad, s)
     else
         return s
     end
@@ -433,12 +442,12 @@ end
 function pystring.rjust(s, len, ch)
     ch = ch or " "
     if #ch ~= 1 then
-        error("pad string master a single word, not " .. ch)
+        error(format("pad string master a single word, not %s", tostring(ch)))
     end
     local delta = len - #s
     if delta > 0  then
         local pad = rep(ch, delta)
-        return s .. pad
+        return format("%s%s", s, pad)
     else
         return s
     end
@@ -453,7 +462,7 @@ end
 function pystring.center(s, len, ch)
     ch = ch or " "
     if #ch ~= 1 then
-        error("pad string master a single word, not " .. ch)
+        error(format("pad string master a single word, not %s", tostring(ch)))
     end
     local delta = len - #s
     if delta > 0 then
@@ -506,7 +515,7 @@ end
 --- @param chars string
 --- @return string
 function pystring.rstrip(s, chars)
-    local patten = setupPatten(chars) .. "+$"
+    local patten = format("%s%s", setupPatten(chars), "+$")
     local last = string_find(s, patten)
     if last then
         return sub(s, 1, last - 1)
@@ -624,7 +633,7 @@ end
 function pystring.index(s1, s2, start, stop)
     local res = pystring_find(s1, s2, start, stop)
     if res < 0 then
-        error(s2 .. " is  not in " .. s1)
+        error(format("%s is  not in %s", tostring(s2), tostring(s1)))
     end
     return res
 end
@@ -641,7 +650,7 @@ local pystring_rfind = pystring.rfind
 function pystring.rindex(s1, s2, start, stop)
     local res = pystring_rfind(s1, s2, start, stop)
     if res < 0 then
-        error(s2 .. " is  not in " .. s1)
+        error(format("%s is  not in %s", tostring(s2), tostring(s1)))
     end
     return res
 end
@@ -705,7 +714,6 @@ local function withRaw(content)
     return content
 end
 
-local format = string.format
 local io_open = io.open
 --- Focus on the file content without worrying about the file descriptor.
 --- `executor` function evals every line if `mode` is set to "line" or the full
@@ -754,10 +762,10 @@ function pystring.with(file_name, mode, executor, file_opt)
             local _raw_file = f:read("*a")
             r = executor(_raw_file)
         else
-            error(string.format('Invalid mode = %s option',mode))
+            error(format('Invalid mode = %s option',mode))
         end
     else
-        error("Problems opening " .. file_name)
+        error(format("Problems opening %s", tostring(file_name)))
     end
     f:close()
     return r
