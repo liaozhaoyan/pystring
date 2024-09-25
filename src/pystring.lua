@@ -761,10 +761,12 @@ function pystring.with(file_name, mode, executor, file_opt)
         elseif (not mode or mode == 'raw') then
             local _raw_file, err = f:read("*a")
             if not _raw_file then
+                f:close()
                 error(format("Problems reading %s, report: %s", file_name, tostring(err)))
             end
             r = executor(_raw_file)
         else
+            f:close()
             error(format('Invalid mode = %s option',mode))
         end
     else
