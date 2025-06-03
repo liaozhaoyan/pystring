@@ -5,6 +5,7 @@
 ---
 
 package.path = "../src/?.lua;" .. package.path
+package.cpath = "../src/?.so;" .. package.cpath
 
 local pystring = require("pystring")
 
@@ -66,39 +67,38 @@ assert(ret[1] == "hello")
 assert(ret[2] == "ua ")
 assert(ret[3] == "anguage")
 
+local s1, s2, s3
 -- partition
-ret = pystring.partition("hello lua")
-assert(#ret == 3)
-assert(ret[1] == "hello")
-assert(ret[2] == " ")
-assert(ret[3] == "lua")
-ret = pystring.partition("hello*lua", "*")
-assert(#ret == 3)
-assert(ret[1] == "hello")
-assert(ret[2] == "*")
-assert(ret[3] == "lua")
-ret = pystring.partition("hello lua language")
-assert(#ret == 3)
-assert(ret[1] == "hello")
-assert(ret[2] == " ")
-assert(ret[3] == "lua language")
-ret = pystring.partition("hello lua language", "lua")
-assert(#ret == 3)
-assert(ret[1] == "hello ")
-assert(ret[2] == "lua")
-assert(ret[3] == " language")
-ret = pystring.partition("hello*lua")
-assert(ret == nil)
+s1, s2, s3 = pystring.partition("hello lua", " ")
+assert(s1 == "hello")
+assert(s2 == " ")
+assert(s3 == "lua")
+s1, s2, s3 = pystring.partition("hello*lua", "*")
+assert(s1 == "hello")
+assert(s2 == "*")
+assert(s3 == "lua")
+s1, s2, s3 = pystring.partition("hello lua language", " ")
+assert(s1 == "hello")
+assert(s2 == " ")
+assert(s3 == "lua language")
+s1, s2, s3 = pystring.partition("hello lua language", "lua")
+assert(s1 == "hello ")
+assert(s2 == "lua")
+assert(s3 == " language")
+s1, s2, s3 = pystring.partition("hello*lua", " ")
+assert(s1 == "hello*lua")
+assert(s2 == "")
+assert(s3 == "")
 
 -- rpartition
-ret = pystring.rpartition("hello lua language")
-assert(ret[1] == "hello lua")
-assert(ret[2] == " ")
-assert(ret[3] == "language")
-ret = pystring.rpartition("hello lua lua language", "lua")
-assert(ret[1] == "hello lua ")
-assert(ret[2] == "lua")
-assert(ret[3] == " language")
+s1, s2, s3 = pystring.rpartition("hello lua language", " ")
+assert(s1 == "hello lua")
+assert(s2 == " ")
+assert(s3 == "language")
+s1, s2, s3 = pystring.rpartition("hello lua lua language", "lua")
+assert(s1 == "hello lua ")
+assert(s2 == "lua")
+assert(s3 == " language")
 
 -- splitlines
 ret = pystring.splitlines("hello\nlua\nlanguage")
@@ -116,13 +116,13 @@ assert(pystring.strip("**hello world**", "*") == "hello world")
 assert(pystring.strip("*?hello world*?", "*?") == "hello world")
 
 -- strip string
-assert(pystring.strip("abcdefhello worldabcdef", "abcdef") == "hello world")
+assert(pystring.strip("abcdefhello worldabcdef", "abcdef") == "hello worl")
 
 -- lstrip string
 assert(pystring.lstrip("abcdefhello worldabcdef", "abcdef") == "hello worldabcdef")
 
 -- rstrip string
-assert(pystring.rstrip("abcdefhello worldabcdef", "abcdef") == "abcdefhello world")
+assert(pystring.rstrip("abcdefhello worldabcdef", "abcdef") == "abcdefhello worl")
 
 -- join string
 local s = "abc d ef g"
@@ -138,7 +138,7 @@ assert(pystring.find("hello world.", "hello") == 1)
 assert(pystring.find("hello world.", "hEllo") == -1)
 
 -- rfind
-assert(pystring.rfind("hello world hello.", "hello") == 12)
+assert(pystring.rfind("hello world hello.", "hello") == 13)
 assert(pystring.rfind("hello world hello.", "hEllo") == -1)
 -- rfind by large string
 largeStr = string.rep("a", 1024 * 1024) .. "del" .. "b" .. "del" .. "c"
@@ -217,14 +217,14 @@ assert(pystring.isfloat("123.45") == true)
 assert(pystring.isfloat("123 45") == false)
 
 -- ljust
-assert(pystring.ljust("1234", 5) == " 1234")
+assert(pystring.ljust("1234", 5) == "1234 ")
 assert(pystring.ljust("1234", 3) == "1234")
-assert(pystring.ljust("1234", 6, "*") == "**1234")
+assert(pystring.ljust("1234", 6, "*") == "1234**")
 
 -- rjust
-assert(pystring.rjust("1234", 5) == "1234 ")
+assert(pystring.rjust("1234", 5) == " 1234")
 assert(pystring.rjust("1234", 3) == "1234")
-assert(pystring.rjust("1234", 6, "*") == "1234**")
+assert(pystring.rjust("1234", 6, "*") == "**1234")
 
 -- center
 assert(pystring.center("1234", 5) == "1234 ")

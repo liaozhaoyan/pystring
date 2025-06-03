@@ -14,36 +14,34 @@ local upper = string.upper
 local format = string.format
 local tostring = tostring
 local error = error
-local type = type
 local ipairs = ipairs
 
--- If the string length is greater than that critical value,
--- The time cost of a string reversal operation will be very high
-local criticalSizeofReverse = 4096
+local require = require
+local cpystring = require("cpystring")
 
-local function setupDelimiter(delimiter)
-    if delimiter then
-        return gsub(delimiter, "([%W])", "%%%1")
-    else
-        return "%s+"
-    end
-end
+local c_count = cpystring.count
+local c_find = cpystring.find
+local c_rfind = cpystring.rfind
+local c_replace = cpystring.replace
+local c_rreplace = cpystring.rreplace
+local c_startswith = cpystring.startswith
+local c_endswith = cpystring.endswith
+local c_shift = cpystring.shift
+local c_swapcase = cpystring.swapcase
+local c_split = cpystring.split
+local c_rsplit = cpystring.rsplit
+local c_center = cpystring.center
+local c_ljust = cpystring.ljust
+local c_rjust = cpystring.rjust
+local c_reverse_list = cpystring.reverse_list
+local c_join = cpystring.join
+local c_partition = cpystring.partition
+local c_rpartition = cpystring.rpartition
+local c_lstrip = cpystring.lstrip
+local c_rstrip = cpystring.rstrip
+local c_strip = cpystring.strip
+local c_map_format = cpystring.map_format
 
-local function setupPatten(s)
-    if s == nil then
-        return "[%s\t\n]"
-    else
-        return setupDelimiter(s)
-    end
-end
-
-local function setupRepl(repl)
-    if type(repl) ~= "string" then
-        error("repl must be a string.")
-    else
-        return gsub(repl, "([%W])", "%%%1")  -- repl:gsub("([%W])", "%%%1")
-    end
-end
 
 --- Rotates the characters of 's' 'n' positions circulary.
 --- --
@@ -51,24 +49,7 @@ end
 --- @param n integer
 --- @return string
 function pystring.shift(s, n)  -- positive for right, negative for left
-    local len = #s
-    if len == 0 then
-        return s
-    end
-    n = n % len
-    if n == 0 then
-        return s
-    elseif n > 0 then  -- "abcd >> 1"
-        local offset = len - n
-        local s1 = sub(s, offset + 1)
-        local s2 = sub(s, 1, offset)
-        return format("%s%s", s1, s2)
-    else   -- "abcd << 1"
-        local offset = len + n
-        local s1 = sub(s, offset + 1)
-        local s2 = sub(s, 1, offset)
-        return format("%s%s", s1, s2)
-    end
+    return c_shift(s, n)
 end
 
 --- True if the string has only lowercase characters, false if not.
@@ -177,13 +158,7 @@ end
 --- @param s string
 --- @return string
 function pystring.swapcase(s)
-    local function swapchar(c)
-        local lc = lower(c)
-        return (lc == c) and upper(c) or lc
-    end
-
-    local result = gsub(s,"%a", swapchar)
-    return result
+    return c_swapcase(s)
 end
 
 --- Capitalize `s` word.
@@ -199,9 +174,7 @@ function pystring.capitalize(s)
     return format("%s%s", upper(s1), s2)
 end
 
-local string_find = string.find
 local concat = table.concat
-local floor = math.floor
 local rep = string.rep
 --- Convert the given `s` string in a table of substrings
 --- delimited by `delimiter`. The maximum number of substrings is
@@ -211,70 +184,19 @@ local rep = string.rep
 --- @param delimiter? string
 --- @param n? integer # Default MaxInteger
 function pystring.split(s, delimiter, n)
-    local result = {}
-    delimiter = setupDelimiter(delimiter)
-
-    local nums = 0
-    local beg = 1
-    local c = 1
-
-    if n then  --n must be an integer greater than 0
-        if type(n) ~= "number" or n <= 0 or n ~= floor(n) then
-            error(format("bad input %s", tostring(n)))
-        end
-    end
-
-    while (true) do
-        local iBeg, iEnd = string_find(s, delimiter, beg)
-        if (iBeg) then  -- matched
-            result[c] = sub(s, beg, iBeg - 1)
-            c = c + 1
-            beg = iEnd + 1
-            nums = nums + 1
-            if n and nums >= n then
-                result[c] = sub(s, beg, #s)
-                c = c + 1
-                break
-            end
-        else
-            result[c] = sub(s, beg, #s)
-            c = c + 1
-            break
-        end
-    end
-    return result
+    return c_split(s, delimiter, n)
 end
-local split = pystring.split
 
 --- Divide s by `del` delimiter returning the left side,
 --- the delimiter and the right side.
 --- --
 --- @param s string
 --- @param del? string
---- @return table<string> | nil
+--- @return string, string, string
 function pystring.partition(s, del)
-    local result = {}
-    del = del or " "
-    local delimiter = setupDelimiter(del)
-    local iBeg, iEnd = string_find(s, delimiter)
-    if iBeg then
-        result[1] = sub(s, 1, iBeg - 1)
-        result[2] = del
-        result[3] = sub(s, iEnd + 1)
-        return result
-    else
-        return nil
-    end
+    return c_partition(s, del)
 end
 
-local function reverseTable(t)
-    local n = #t
-    for i = 1, n / 2 do
-        t[i], t[n + 1 - i] = t[n + 1 - i], t[i]
-    end
-end
-
-local reverse = string.reverse
 --- Convert the given `s` string in a table of substrings from right
 --- --
 --- @param s string
@@ -282,100 +204,15 @@ local reverse = string.reverse
 --- @param n? integer # default is MaxInteger
 --- @return table<string>
 function pystring.rsplit(s, delimiter, n)
-    if not n then  -- if n is nil, Equivalent to split
-        return split(s, delimiter)
-    end
-
-    if type(n) ~= "number" or n <= 0 or n ~= floor(n) then
-        error(format("bad input %s", tostring(n)))
-    end
-
-    local result = {}
-    local len = #s + 1
-    if len >= criticalSizeofReverse then  -- a big string? Reversing a string can be time-consuming
-        local res = split(s, delimiter)
-        local resLen = #res
-        n = n + 1  -- The length of the returned array is equal to the number of splits plus one
-        if resLen <= n then
-            return res
-        end
-
-        if delimiter then  -- not blank?
-            result[1] = concat(res, delimiter, 1, resLen - n + 1)
-        else  -- blank,
-            local cells = {}
-            local pos = 1
-            local next
-            local c = 1
-
-            for i = 1, resLen - n + 1 do
-                cells[c] = res[i]
-                c = c + 1
-
-                pos = pos + #res[i]
-                next = string_find(s, "%S", pos)
-                cells[c] = rep(" ", next - pos)
-                c = c + 1
-                pos = next
-            end
-            result[1] = concat(cells, "", 1, #cells - 1)
-        end
-        for i = 1, n do
-            result[1 + i] = res[n + i]
-        end
-        return result
-    end
-
-    -- else reverse the string may be a better way
-    local rs = reverse(s)
-    local rDel = reverse(delimiter)
-    rDel = setupDelimiter(rDel)
-    local nums = 0
-    local beg = 1
-    local c = 1
-
-    while (true) do
-        local iBeg, iEnd = string_find(rs, rDel, beg)
-        if (iBeg) then
-            result[c] = sub(s, len - (iBeg - 1),len - beg)
-            c = c + 1
-            beg = iEnd + 1
-            nums = nums + 1
-            if nums >= n then
-                result[c] = sub(s, 1, len - beg)
-                break
-            end
-        else
-            result[c] = sub(s, 1, len - beg)
-            c = c + 1
-            break
-        end
-    end
-
-    reverseTable(result)
-    return result
+    return c_rsplit(s, delimiter, n)
 end
 
 ---
+--- @param s string
 --- @param del? string
---- @return table<string> | nil
+--- @return string, string, string
 function pystring.rpartition(s, del)
-    local result = {}
-    del = del or " "
-    local rs = reverse(s)
-    local rDel = reverse(del)
-    local delimiter = setupDelimiter(rDel)
-    local len = #s
-
-    local iBeg, iEnd = string_find(rs, delimiter)
-    if iBeg then
-        result[1] = sub(s, 1, len - iBeg + 1 - #del)
-        result[2] = del
-        result[3] = sub(s, len - iEnd + 1 + #del)
-        return result
-    else
-        return nil
-    end
+    return c_rpartition(s, del)
 end
 
 local capitalize = pystring.capitalize
@@ -388,7 +225,7 @@ function pystring.title(s)
         return s
     end
 
-    local ss = split(s, " ")
+    local ss = c_split(s, " ")
     for i = 1, #ss do
         ss[i] = capitalize(ss[i])
     end
@@ -400,11 +237,11 @@ end
 --- @param s string
 --- @return string
 function pystring.capwords(s)
-    local lines = split(s, "\n")
+    local lines = c_split(s, "\n")
     local rLines = {}
     for i, line in ipairs(lines) do
         local rWords = {}
-        local words = split(line, " ")
+        local words = c_split(line, " ")
         for j, word in ipairs(words) do
             rWords[j] = capitalize(word)
         end
@@ -420,17 +257,7 @@ end
 --- @param ch? string # Default " "
 --- @return string
 function pystring.ljust(s, len, ch)
-    ch = ch or " "
-    if #ch ~= 1 then
-        error(format("pad string master a single word, not %s", tostring(ch)))
-    end
-    local delta = len - #s
-    if delta > 0 then
-        local pad = rep(ch, delta)
-        return format("%s%s", pad, s)
-    else
-        return s
-    end
+   return c_ljust(s, len, ch)
 end
 
 --- Justify `s` by right with `len` copies of `ch`.
@@ -440,17 +267,7 @@ end
 --- @param ch? string # Default " "
 --- @return string
 function pystring.rjust(s, len, ch)
-    ch = ch or " "
-    if #ch ~= 1 then
-        error(format("pad string master a single word, not %s", tostring(ch)))
-    end
-    local delta = len - #s
-    if delta > 0  then
-        local pad = rep(ch, delta)
-        return format("%s%s", s, pad)
-    else
-        return s
-    end
+    return c_rjust(s, len, ch)
 end
 
 --- Center `s` lines with `len` copies of `ch` in the longest line.
@@ -460,30 +277,16 @@ end
 --- @param ch? string # Default " "
 --- @return string
 function pystring.center(s, len, ch)
-    ch = ch or " "
-    if #ch ~= 1 then
-        error(format("pad string master a single word, not %s", tostring(ch)))
-    end
-    local delta = len - #s
-    if delta > 0 then
-        local left = floor(delta / 2)
-        local right = delta - left
-
-        local res = {rep(ch, left), s, rep(ch, right)}
-        return concat(res)
-    else
-        return s
-    end
+    return c_center(s, len, ch)
 end
 
-local ljust = pystring.ljust
 --- Justify by left with zeros.
 --- --
 --- @param s string
 --- @param len integer
 --- @return string
 function pystring.zfill(s, len)
-    return ljust(s, len, "0")
+    return c_rjust(s, len, "0")
 end
 
 --- Split string line by line
@@ -491,7 +294,7 @@ end
 --- @param s string
 --- @return table<string>
 function pystring.splitlines(s)
-    return split(s, '\n')
+    return c_split(s, '\n')
 end
 
 --- Remove first `chars` string of `s`. 
@@ -500,13 +303,7 @@ end
 --- @param chars string
 --- @return string
 function pystring.lstrip(s, chars)
-    local patten = concat({"^", setupPatten(chars), "+"})
-    local _, ends = string_find(s, patten)
-    if ends then
-        return sub(s, ends + 1, -1)
-    else
-        return s
-    end
+    return c_lstrip(s, chars)
 end
 
 --- Remove last `chars` string of `s`.
@@ -515,17 +312,9 @@ end
 --- @param chars string
 --- @return string
 function pystring.rstrip(s, chars)
-    local patten = format("%s%s", setupPatten(chars), "+$")
-    local last = string_find(s, patten)
-    if last then
-        return sub(s, 1, last - 1)
-    else
-        return s
-    end
+    return c_rstrip(s, chars)
 end
 
-local lstrip = pystring.lstrip
-local rstrip = pystring.rstrip
 --- Remove last and first `chars` string of `s`, it's a consecutive
 --- `lstrip` and `rstrip`.
 --- --
@@ -533,8 +322,7 @@ local rstrip = pystring.rstrip
 --- @param chars string
 --- @return string
 function pystring.strip(s, chars)
-    local res = lstrip(s, chars)
-    return rstrip(res, chars)
+    return c_strip(s, chars)
 end
 
 --- Joins an array of *string* `strings` with `delim` between.
@@ -543,7 +331,7 @@ end
 --- @param strings table<string>
 --- @return string
 function pystring.join(delim, strings)
-    return concat(strings, delim)
+    return c_join(delim, strings)
 end
 
 --- Check if `s1` begin with `s2`.
@@ -552,7 +340,7 @@ end
 --- @param s2 string
 --- @return string | boolean
 function pystring.startswith(s1, s2)
-    return sub(s1,1, #s2) == s2
+    return c_startswith(s1, s2)
 end
 
 --- Check if `s1` ends with `s2`.
@@ -561,7 +349,7 @@ end
 --- @param s2 string
 --- @return string | boolean
 function pystring.endswith(s1, s2)
-    return s2 == '' or sub(s1,-#s2) == s2
+    return c_endswith(s1, s2)
 end
 
 --- Get the first ocurrence of `s2` in `s1` beginning from `start`
@@ -573,15 +361,10 @@ end
 --- @param stop? integer # Default -1 --> end
 --- @return integer
 function pystring.find(s1, s2, start, stop)
-    start = start or 1
-    stop = stop or -1
-    s1 = sub(s1, start, stop)
-    local res = string_find(s1, s2, 1, false)
-    return res or -1
+    return c_find(s1, s2, start, stop)
 end
 
 
-local pystring_find = pystring.find
 --- Get the first ocurrence of `s2` in `s1` beginning from `start`
 --- and finishing at `stop` but working with the reversed version of
 --- `s1`.
@@ -592,34 +375,7 @@ local pystring_find = pystring.find
 --- @param stop? integer # Default -1 --> end
 --- @return integer
 function pystring.rfind(s1, s2, start, stop)
-    start = start or 1
-    stop = stop or -1
-    s1 = sub(s1, start, stop)
-
-    local len = #s1
-
-    if len >= criticalSizeofReverse then  --  a big string?
-        local res = -1
-        local current_pos = 0
-        while true do
-            local start_pos, end_pos = string_find(s1, s2, current_pos + 1, false)
-            if not start_pos then
-                break
-            end
-            res = start_pos
-            current_pos = end_pos
-        end
-        return res
-    end
-
-    local lFind = #s2
-    local rs1, rs2 = reverse(s1), reverse(s2)
-    local i = string_find(rs1, rs2, 1, false)
-    if i then
-        return len - i - lFind + 1
-    else
-        return -1
-    end
+    return c_rfind(s1, s2, start, stop)
 end
 
 --- Get the first ocurrence of `s2` in `s1` starting at `start`
@@ -631,14 +387,13 @@ end
 --- @param stop integer
 --- @return integer
 function pystring.index(s1, s2, start, stop)
-    local res = pystring_find(s1, s2, start, stop)
+    local res = c_find(s1, s2, start, stop)
     if res < 0 then
         error(format("%s is  not in %s", tostring(s2), tostring(s1)))
     end
     return res
 end
 
-local pystring_rfind = pystring.rfind
 --- Get the index of first `s2` ocurrence in `s1` beginning from `start`
 --- and ending at `stop`
 --- --
@@ -648,30 +403,25 @@ local pystring_rfind = pystring.rfind
 --- @param stop integer
 --- @return integer
 function pystring.rindex(s1, s2, start, stop)
-    local res = pystring_rfind(s1, s2, start, stop)
+    local res = c_rfind(s1, s2, start, stop)
     if res < 0 then
         error(format("%s is  not in %s", tostring(s2), tostring(s1)))
     end
     return res
 end
 
-local gmatch = string.gmatch
 --- Count how many times the pattern appears in the target
 --- string.
 --- --
 --- @param s string
---- @param find string
+--- @param token string
+--- @param start integer
+--- @param stop integer
 --- @return integer
-function pystring.count(s, find)
-    local i = 0
-    local patten = setupPatten(find)
-    for _ in gmatch(s, patten) do
-        i = i + 1
-    end
-    return i
+function pystring.count(s, token, start, stop)
+    return c_count(s, token, start, stop)
 end
 
-local gsub = string.gsub
 --- Replaces the first n occurrences which matches with 'find' pattern
 --- and substitutes them by repl.
 --- --
@@ -681,10 +431,20 @@ local gsub = string.gsub
 --- @param n integer # Number of occurrences until stop counting.
 --- @return string, integer
 function pystring.replace(s, find, repl, n)
-    local patten = setupPatten(find)
-    repl = setupRepl(repl)
+    return c_replace(s, find, repl, n)
+end
 
-    return gsub(s, patten, repl, n)
+
+--- Replaces the first n occurrences which matches with 'rfind' pattern
+--- and substitutes them by repl.
+--- --
+--- @param s string
+--- @param find string # Regular expression
+--- @param repl string # Replacement
+--- @param n integer # Number of occurrences until stop counting.
+--- @return string, integer
+function pystring.rreplace(s, find, repl, n)
+    return c_rreplace(s, find, repl, n)
 end
 
 --- Expand blank spaces in the string by 'tabs' times.
@@ -696,6 +456,15 @@ function pystring.expandtabs(s, tabs)
     tabs = tabs or 4
     local repl = rep(" ", tabs)
     return gsub(s, "\t", repl)
+end
+
+--- Map format string with a table.
+--- --
+--- @param fmt string
+--- @param t table<string>
+--- @param delimiter? string
+function pystring.map_format(fmt, t, delimiter)
+    return c_map_format(fmt, t, delimiter)
 end
 
 --- default callback function for pystring.with, mode lines
