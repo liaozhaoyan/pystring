@@ -1267,7 +1267,7 @@ static int map_format(lua_State *L) {
     luaL_buffinit(L, &buffer);
     lua_pushnil(L);    // iterator for table arg 2
     while (lua_next(L, 2) != 0) {
-        ssize_t key_len, value_len;
+        size_t key_len, value_len;
         const char *key = lua_tolstring(L, -2, &key_len);
         const char *value = lua_tolstring(L, -1, &value_len);
         lua_pop(L, 1);
