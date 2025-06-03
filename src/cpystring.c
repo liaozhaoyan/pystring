@@ -680,7 +680,7 @@ static int split_nil(lua_State *L, const char *string, size_t string_len, ssize_
         }
     }
     if (last < string_len) {  // edge case
-        lua_pushstring(L, string + last);
+        lua_pushlstring(L, string + last, string_len - last);
         lua_rawseti(L, -2, ++ count);
     }
     return count;
@@ -705,7 +705,7 @@ static int split_ch(lua_State *L, const char *string, size_t string_len, char ch
         }
     }
     if (last <= string_len) {  // edge case should add last empty string
-        lua_pushstring(L, string + last);
+        lua_pushlstring(L, string + last, string_len - last);
         lua_rawseti(L, -2, ++ count);
     }
     return count;
@@ -731,7 +731,7 @@ static int split_str(lua_State *L, const char *string, size_t string_len, const 
         }
     }
     if (last <= string_len) {  // edge case should add last empty string
-        lua_pushstring(L, string + last);
+        lua_pushlstring(L, string + last, string_len - last);
         lua_rawseti(L, -2, ++ count);
     }
     return count;
@@ -756,12 +756,12 @@ static int split(lua_State *L) {
 
         lua_newtable(L);
         if (token_len == 0) {
-            lua_pushstring(L, string);
+            lua_pushlstring(L, string, string_len);
             lua_rawseti(L, -2, 1);
             return 1;
         }
         if (max_split == 0) {
-            lua_pushstring(L, string);
+            lua_pushlstring(L, string, string_len);
             lua_rawseti(L, -2, 1);
             return 1;
         }
@@ -778,7 +778,7 @@ static int split(lua_State *L) {
 
         lua_newtable(L);
         if (max_split == 0) {
-            lua_pushstring(L, string);
+            lua_pushlstring(L, string, string_len);
             lua_rawseti(L, -2, 1);
             return 1;
         }
@@ -917,12 +917,12 @@ static int rsplit(lua_State *L) {
 
         lua_newtable(L);
         if (token_len == 0) {
-            lua_pushstring(L, string);
+            lua_pushlstring(L, string, string_len);
             lua_rawseti(L, -2, 1);
             return 1;
         }
         if (max_split == 0) {
-            lua_pushstring(L, string);
+            lua_pushlstring(L, string, string_len);
             lua_rawseti(L, -2, 1);
             return 1;
         }
@@ -939,7 +939,7 @@ static int rsplit(lua_State *L) {
 
         lua_newtable(L);
         if (max_split == 0) {
-            lua_pushstring(L, string);
+            lua_pushlstring(L, string, string_len);
             lua_rawseti(L, -2, 1);
             return 1;
         }

@@ -179,6 +179,15 @@ res = cpystring.split("hello*lua*l", "*l", 2)
 assert(#res == 3 and res[1] == "hello" and res[2] == "ua" and res[3] == "")
 res = cpystring.split("hello*lua*lb", "b")
 assert(#res == 2 and res[1] == "hello*lua*l" and res[2] == "")
+local ss
+ss = "abc\r\nabc\r\nabc"
+res = cpystring.split(ss, "\r\n", 1)
+assert(#res == 2 and res[1] == "abc" and res[2] == "abc\r\nabc")
+ss = "你好\r\n你好\r\n 你好"
+res = cpystring.split(ss, "\r\n", 1)
+assert(#res == 2 and res[1] == "你好" and res[2] == "你好\r\n 你好")
+res = cpystring.split(ss, "\r\n")
+assert(#res == 3 and res[1] == "你好" and res[2] == "你好" and res[3] == " 你好")
 
 
 --#region test reverse list
