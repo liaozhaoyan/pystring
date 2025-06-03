@@ -679,7 +679,7 @@ static int split_nil(lua_State *L, const char *string, size_t string_len, ssize_
             }
         }
     }
-    if (last < string_len) {
+    if (last < string_len) {  // edge case
         lua_pushstring(L, string + last);
         lua_rawseti(L, -2, ++ count);
     }
@@ -704,7 +704,7 @@ static int split_ch(lua_State *L, const char *string, size_t string_len, char ch
             }
         }
     }
-    if (last < string_len) {
+    if (last <= string_len) {  // edge case should add last empty string
         lua_pushstring(L, string + last);
         lua_rawseti(L, -2, ++ count);
     }
@@ -730,7 +730,7 @@ static int split_str(lua_State *L, const char *string, size_t string_len, const 
             lua_rawseti(L, -2, ++ count);
         }
     }
-    if (last < string_len) {
+    if (last <= string_len) {  // edge case should add last empty string
         lua_pushstring(L, string + last);
         lua_rawseti(L, -2, ++ count);
     }
@@ -863,7 +863,7 @@ static int rsplit_ch(lua_State *L, const char *string, size_t string_len, char c
             }
         }
     }
-    if (last >= 0) {
+    if (last + 1 >= 0) {
         lua_pushlstring(L, string, last + 1);
         lua_rawseti(L, -2, ++ count);
     }
