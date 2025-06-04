@@ -5,7 +5,6 @@ local require = require
 local cpystring = require("cpystring")
 local assert = assert
 
-
 --#region test count
 assert(cpystring.count("hello lua language", "l") == 4)
 assert(cpystring.count("hello lua language", " ") == 2)
@@ -13,6 +12,9 @@ assert(cpystring.count("hello lua language", "ua") == 2)
 assert(cpystring.count("hello lua language", "lan") == 1)
 assert(cpystring.count("hello lua language", "") == 0)
 assert(cpystring.count("hello lua language", "\n") == 0)
+assert(cpystring.count("hello lua language", "a") == 3)
+assert(cpystring.count("hello lua \0language", "a") == 3)
+assert(cpystring.count("hello\0wolrd", "o") == 2)
 
 assert(cpystring.count("hello lua language", "l", 1) == 4)
 assert(cpystring.count("hello lua language", "l", 2) == 4)
@@ -27,6 +29,7 @@ assert(cpystring.count("hello lua language", "l", 128) == 0)
 assert(cpystring.count("hello lua language", "e", 128) == 0)
 assert(cpystring.count("hello lua language", "h", -128) == 1)
 assert(cpystring.count("hello lua language", "h", 128) == 0)
+assert(cpystring.count("hello\0wolrd", "o", 6) == 1)
 
 assert(cpystring.count("hello lua language", "l", nil, -1) == 4)
 assert(cpystring.count("hello lua language", "l", 1, -8) == 4)
