@@ -22,7 +22,7 @@ static void utarray_nstr_cpy(void *dst, const void *src) {
         if (*dstc == NULL) {
             utarray_oom();
         } else {
-            strncpy(*dstc, srcc->s, srcc->len);
+            memcpy(*dstc, srcc->s, srcc->len);
         }
         (*dstc)[srcc->len] = '\0';
     }
@@ -338,7 +338,7 @@ static int replace(lua_State *L) {
     if (nargs >= 4) {
         max_replace = check_int(L, 4, string_len);
         if (max_replace <= 0) {
-            lua_pushstring(L, string);
+            lua_pushlstring(L, string, string_len);
             return 1;
         }
     } else {
@@ -384,7 +384,7 @@ static int rreplace(lua_State *L) {
     if (nargs >= 4) {
         max_replace = check_int(L, 4, string_len);
         if (max_replace <= 0) {
-            lua_pushstring(L, string);
+            lua_pushlstring(L, string, string_len);
             return 1;
         }
     } else {
@@ -498,7 +498,7 @@ static int center(lua_State *L) {
     const char *string = check_strict_string(L, 1, &string_len);
     ssize_t width = luaL_checkinteger(L, 2);
     if (width <= 0) {
-        lua_pushstring(L, string);
+        lua_pushlstring(L, string, string_len);
         return 1;
     }
     char pad_ch = ' ';
@@ -532,7 +532,7 @@ static int ljust(lua_State *L) {
     const char *string = check_strict_string(L, 1, &string_len);
     ssize_t width = luaL_checkinteger(L, 2);
     if (width <= 0) {
-        lua_pushstring(L, string);
+        lua_pushlstring(L, string, string_len);
         return 1;
     }
     char pad_ch = ' ';
@@ -561,7 +561,7 @@ static int rjust(lua_State *L) {
     const char *string = check_strict_string(L, 1, &string_len);
     ssize_t width = luaL_checkinteger(L, 2);
     if (width <= 0) {
-        lua_pushstring(L, string);
+        lua_pushlstring(L, string, string_len);
         return 1;
     }
     char pad_ch = ' ';
@@ -591,7 +591,7 @@ static int shift(lua_State *L) {
     ssize_t shift = luaL_checkinteger(L, 2);
     shift = shift % string_len;
     if (shift == 0) {
-        lua_pushstring(L, string);
+        lua_pushlstring(L, string, string_len);
     } else if ( shift > 0) {
         luaL_Buffer buffer;
         ssize_t offset = string_len - shift;
@@ -998,7 +998,7 @@ static int partition(lua_State *L) {
     const char *token = check_strict_string(L, 2, &token_len);
     ssize_t pos = fastsearch(string, string_len, token, token_len, 1, FAST_SEARCH);
     if (pos < 0) {
-        lua_pushstring(L, string);
+        lua_pushlstring(L, string, string_len);
         lua_pushstring(L, "");
         lua_pushstring(L, "");
     } else {
@@ -1017,7 +1017,7 @@ static int rpartition(lua_State *L) {
     if (pos < 0) {
         lua_pushstring(L, "");
         lua_pushstring(L, "");
-        lua_pushstring(L, string);
+        lua_pushlstring(L, string, string_len);
     } else {
         lua_pushlstring(L, string, pos);
         lua_pushlstring(L, string + pos, token_len);
@@ -1330,6 +1330,10 @@ static const luaL_Reg cpystring[] = {
 };
 
 int luaopen_cpystring(lua_State *L){
-    luaL_newlib(L, cpystring);
+ #if LUA_VERSION_NUM > 501
+    luaL_newlib(L, module_f);
+#else
+    luaL_register(L, "cspystring", cpystring);
+#endif
     return 1;
 }
