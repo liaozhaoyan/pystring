@@ -30,10 +30,6 @@ static void utarray_nstr_cpy(void *dst, const void *src) {
 
 static const UT_icd ut_nstr_icd UTARRAY_UNUSED = {sizeof(char*),NULL,utarray_nstr_cpy,utarray_str_dtor};
 
-#if LUA_VERSION_NUM < 502
-# define luaL_newlib(L,l) (lua_newtable(L), luaL_register(L,NULL,l))
-# define lua_rawlen lua_objlen
-#endif
 
 /* fastsearch implementation copied from python's stringlib. */
 
