@@ -1307,7 +1307,7 @@ static const luaL_Reg cpystring[] = {
     {"rreplace", rreplace},
     {"startswith", startswith},
     {"endswith", endswith},
-    {"shift", shift},   // set
+    {"shift", shift}, 
     {"swapcase", swapcase},
     {"split", split},
     {"rsplit", rsplit},
