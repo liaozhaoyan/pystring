@@ -967,6 +967,7 @@ static int join(lua_State *L) {
 
     size_t cell_len;
     const char *cell;
+    ssize_t len_total = 0;
 
     len = lua_objlen(L, 2);
     luaL_Buffer buffer;
@@ -974,15 +975,13 @@ static int join(lua_State *L) {
     if (len > 0) {
         for (i = 1; i < len; i ++) {
             lua_rawgeti(L, 2, i);
-            cell = lua_tolstring(L, -1, &cell_len);
-            luaL_addlstring(&buffer, cell, cell_len);
+            luaL_addvalue(&buffer);
             if (seq_len > 0) {
                 luaL_addlstring(&buffer, sep, seq_len);
             }
         }
         lua_rawgeti(L, 2, len);
-        cell = lua_tolstring(L, -1, &cell_len);
-        luaL_addlstring(&buffer, cell, cell_len);
+        luaL_addvalue(&buffer);
     }
     luaL_pushresult(&buffer);
     return 1;
@@ -1258,9 +1257,10 @@ static int map_format(lua_State *L) {
     int *p_index;
     char **p_str;
 
+    UT_array *results;
+    utarray_new(results, &ut_str_icd);
+
     count = 0;
-    luaL_Buffer buffer;
-    luaL_buffinit(L, &buffer);
     lua_pushnil(L);    // iterator for table arg 2
     while (lua_next(L, 2) != 0) {
         size_t key_len, value_len;
@@ -1271,28 +1271,38 @@ static int map_format(lua_State *L) {
         if (key == NULL || value == NULL) {
             utarray_free(strs);
             utarray_free(indexs);
+            utarray_free(results);
             luaL_error(L, "map_format, invalid map key or value.");
         }
 
         if (count > 0 && seq_len > 0) {  // add for next string.
-            luaL_addstring(&buffer, sep);
+            utarray_push_back(results, &sep);
         }
         count ++;
         for (p_index = (int *)utarray_front(indexs); 
-         p_index != NULL; 
-         p_index = (int *)utarray_next(indexs, p_index)) {
-            int index = *p_index;
-            if (index == MAP_FORMAT_KEY_INDEX) {
-                luaL_addstring(&buffer, key);
-            } else if (index == MAP_FORMAT_VALUE_INDEX) {
-                luaL_addstring(&buffer, value);
-            } else {
-                p_str = (char **)utarray_eltptr(strs, index);
-                luaL_addstring(&buffer, *p_str);
+            p_index != NULL; 
+            p_index = (int *)utarray_next(indexs, p_index)) {
+                int index = *p_index;
+                if (index == MAP_FORMAT_KEY_INDEX) {
+                    utarray_push_back(results, &key);
+                } else if (index == MAP_FORMAT_VALUE_INDEX) {
+                    utarray_push_back(results, &value);
+                } else {
+                    p_str = (char **)utarray_eltptr(strs, index);
+                    utarray_push_back(results, p_str);
             }
         }
     }
 
+    luaL_Buffer buffer;
+    luaL_buffinit(L, &buffer);
+    for (p_str = (char **)utarray_front(results); 
+        p_str != NULL; 
+        p_str = (char **)utarray_next(results, p_str)) {
+            luaL_addstring(&buffer, *p_str);
+    }
+
+    utarray_free(results);
     utarray_free(indexs);
     utarray_free(strs);
     luaL_pushresult(&buffer);

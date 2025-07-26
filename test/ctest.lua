@@ -353,5 +353,13 @@ assert(cpystring.map_format("hello {k} {v} .", {k = "world", v = "!"}) == "hello
 assert(cpystring.map_format("hello {k} {v} .", {k = "world", v = "!"}, "*") == "hello k world .*hello v ! .")
 assert(cpystring.map_format("", {k = "world", v = "!"}, "*") == "*")
 assert(cpystring.map_format("", {}) == "")
+local kv = {}
+for i = 1, 4000 do
+    kv[string.format("k%d", i)] = "hello world"
+end
+res = cpystring.map_format("hello {k} {v}. ", kv)
+assert(cpystring.startswith(res, "hello k"), string.format("res: %s", res:sub(1, 40)))
+assert(cpystring.endswith(res, "hello world. "))
+assert(#res >= 4000 * 21)
 
 print("test ok.")

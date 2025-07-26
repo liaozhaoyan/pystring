@@ -34,6 +34,7 @@ assert(ret[3] == "language")
 
 -- rsplit by arg number
 ret = pystring.rsplit("hello*lua *language", "*", 1)
+print(ret[1], ret[2])
 assert(#ret == 2)
 assert(ret[1] == "hello*lua ")
 ret = pystring.rsplit("hello*lua *lua language", "lua", 1)
@@ -128,6 +129,13 @@ assert(pystring.rstrip("abcdefhello worldabcdef", "abcdef") == "abcdefhello worl
 local s = "abc d ef g"
 local ret = pystring.split(s)
 assert(pystring.join(" ", ret) == s)
+
+local arr = {}
+for i = 1, 4000 do
+    arr[i] = "abcdef"
+end
+local s1, s2 = pystring.join(" ", arr), table.concat(arr, " ")
+assert(s1 == s2, string.format("join string failed, %d, %d.", #s1, #s2))
 
 -- startswith/endswith
 assert(pystring.startswith("hello world", "hello"))
