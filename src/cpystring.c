@@ -951,7 +951,7 @@ static int rsplit(lua_State *L) {
 static int reverse_list(lua_State *L) {
     luaL_checktype(L, 1, LUA_TTABLE);
 #if LUA_VERSION_NUM >=502
-    ssize_t len = (L, 1);
+    ssize_t len = luaL_len(L, 1);
 #else
     ssize_t len = lua_objlen(L, 1);
 #endif
@@ -969,10 +969,10 @@ static int join(lua_State *L) {
     const char *cell;
     ssize_t len_total = 0;
 
-#if LUA_VERSION_NUM < 502
-    len = lua_objlen(L, 2);
-#else
+#if LUA_VERSION_NUM >= 502
     len = luaL_len(L, 2);
+#else
+    len = lua_objlen(L, 2);
 #endif
 
     luaL_Buffer buffer;
