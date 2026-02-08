@@ -951,7 +951,7 @@ static int rsplit(lua_State *L) {
 static int reverse_list(lua_State *L) {
     luaL_checktype(L, 1, LUA_TTABLE);
 #if LUA_VERSION_NUM >=502
-    ssize_t len = (L, 1);
+    ssize_t len = luaL_len(L, 1);
 #else
     ssize_t len = lua_objlen(L, 1);
 #endif
@@ -969,7 +969,12 @@ static int join(lua_State *L) {
     const char *cell;
     ssize_t len_total = 0;
 
+#if LUA_VERSION_NUM >= 502
+    len = luaL_len(L, 2);
+#else
     len = lua_objlen(L, 2);
+#endif
+
     luaL_Buffer buffer;
     luaL_buffinit(L, &buffer);
     if (len > 0) {
@@ -1336,8 +1341,8 @@ static const luaL_Reg cpystring[] = {
 };
 
 int luaopen_cpystring(lua_State *L){
- #if LUA_VERSION_NUM > 501
-    luaL_newlib(L, module_f);
+#if LUA_VERSION_NUM > 501
+    luaL_newlib(L, cpystring);
 #else
     luaL_register(L, "cspystring", cpystring);
 #endif
